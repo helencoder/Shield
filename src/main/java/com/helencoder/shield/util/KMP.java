@@ -5,12 +5,12 @@ package com.helencoder.shield.util;
  *
  * Created by helencoder on 2018/1/3.
  */
-public class KMP {
+class KMP {
 
     /**
      * 获取字符串中子字符串出现的次数
      */
-    public static int getOccurrences(String str, String pattern) {
+    static int getOccurrences(String str, String pattern) {
         int count = 0;
         int res = -1;
         do {
@@ -30,7 +30,7 @@ public class KMP {
     /**
      * KMP算法查找字符串出现位置,不存在返回-1
      */
-    public static int search(String str, String pattern) {
+    static int search(String str, String pattern) {
         char[] strs = str.toCharArray();
         char[] patterns = pattern.toCharArray();
         int L = strs.length, N = patterns.length, i = 0, j = 0; // i: str pointer, j: pattern pointer

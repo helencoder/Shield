@@ -8,7 +8,7 @@ import java.util.List;
  *
  * Created by helencoder on 2018/1/3.
  */
-public class LCS {
+class LCS {
     /**
      * 最长公共子序列--LCS算法
      * 矩阵填充公式
@@ -20,7 +20,7 @@ public class LCS {
      * @param str2 字符串2
      * @return String 最长公共子序列
      */
-    public static String commonSequence(String str1, String str2) {
+    static String commonSequence(String str1, String str2) {
         // 参数检查
         if (str1 == null || str2 == null) {
             return "";
@@ -69,7 +69,7 @@ public class LCS {
      * @param str2 字符串2
      * @return List<String> 最长公共子串list
      */
-    public static List<String> commonString(String str1, String str2) {
+    static List<String> commonString(String str1, String str2) {
         // 参数检查
         if (str1 == null || str1 == null) {
             return new ArrayList<String>();
