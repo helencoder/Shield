@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import org.apache.commons.math.linear.Array2DRowRealMatrix;
 import org.apache.commons.math.linear.RealMatrix;
 /**
+ * 半监督图识别
+ *
  * Created by helencoder on 2018/1/4.
  */
 public class SemiGraphRegu {
@@ -30,7 +32,7 @@ public class SemiGraphRegu {
         gr.graph_regu_iter(outputpath);
     }
 
-    public void graph_regu_iter(String outputpath) throws Exception {
+    private void graph_regu_iter(String outputpath) throws Exception {
         String node_path = "./data/exp/verification/network/node.graph";
         String initial_path = "./data/exp/verification/network/init_rank";
         String w0_path = "./data/exp/verification/network/w0";
@@ -80,8 +82,8 @@ public class SemiGraphRegu {
             res = this.residual(Ru, Ru_prev);
         }
 
-        File output_file2 = new File(outputpath);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(output_file2), "UTF-8"));
+        BufferedWriter bw = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(new File(outputpath)), "UTF-8"));
         this.print(Rl, 0, bw);
         this.print(Ru, this.l, bw);
         bw.close();
@@ -93,8 +95,8 @@ public class SemiGraphRegu {
         this.unlabelled = new int[len - this.l];
 
         int i;
-        for(i = 0; i < this.l; this.lablled[i] = i++) {
-            ;
+        for(i = 0; i < this.l; ) {
+            this.lablled[i] = i++;
         }
 
         for(i = 0; i < len - this.l; ++i) {
@@ -126,38 +128,35 @@ public class SemiGraphRegu {
         return sum;
     }
 
-    public void print(RealMatrix R, int start, BufferedWriter bw) throws Exception {
+    private void print(RealMatrix R, int start, BufferedWriter bw) throws Exception {
         DecimalFormat df = new DecimalFormat("#.00");
         int len = R.getRowDimension();
 
         for(int i = 0; i < len; ++i) {
-            bw.write((String)this.nodes.get(start + i) + "\t" + df.format(R.getEntry(i, 0)) + "\n");
+            bw.write(this.nodes.get(start + i) + "\t" + df.format(R.getEntry(i, 0)) + "\n");
         }
-
     }
 
-    public void read_nodes(String inputpath) throws Exception {
-        this.nodes = new ArrayList();
-        File file = new File(inputpath);
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-        String str = null;
+    private void read_nodes(String inputpath) throws Exception {
+        this.nodes = new ArrayList<String>();
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(new FileInputStream(new File(inputpath)), "UTF-8"));
 
-        while((str = br.readLine()) != null) {
-            str = str.trim();
-            this.nodes.add(str);
+        for (String str = br.readLine(); br != null ; str = br.readLine()) {
+            this.nodes.add(str.trim());
         }
 
         br.close();
         System.out.println("node size: " + this.nodes.size());
     }
 
-    public RealMatrix read_weighted_matrix(String inputpath) throws Exception {
+    private RealMatrix read_weighted_matrix(String inputpath) throws Exception {
         int len = this.length(inputpath);
-        File file = new File(inputpath);
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-        String str = null;
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(new FileInputStream(new File(inputpath)), "UTF-8"));
         RealMatrix m = new Array2DRowRealMatrix(len, len);
         int i = 0;
+        String str = null;
 
         int num;
         for(num = 0; (str = br.readLine()) != null; ++i) {
@@ -168,7 +167,7 @@ public class SemiGraphRegu {
             }
 
             for(int j = 0; j < items.length; ++j) {
-                double v = (new Double(items[j].trim())).doubleValue();
+                double v = new Double(items[j].trim());
                 m.setEntry(i, j, v);
                 if(v > 0.0D) {
                     ++num;
@@ -181,9 +180,9 @@ public class SemiGraphRegu {
         return m;
     }
 
-    public int length(String inputpath) throws Exception {
-        File file = new File(inputpath);
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+    private int length(String inputpath) throws Exception {
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(new FileInputStream(new File(inputpath)), "UTF-8"));
         String str = br.readLine().trim();
         String[] items = str.split("\t");
         System.out.println("the number of nodes in this graph: " + items.length);
@@ -191,15 +190,13 @@ public class SemiGraphRegu {
         return items.length;
     }
 
-    public RealMatrix read_vector(String inputpath) throws Exception {
-        File file = new File(inputpath);
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-        ArrayList<Double> arr = new ArrayList();
-        String str = null;
+    private RealMatrix read_vector(String inputpath) throws Exception {
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(new FileInputStream(new File(inputpath)), "UTF-8"));
+        ArrayList<Double> arr = new ArrayList<Double>();
 
-        while((str = br.readLine()) != null) {
-            str = str.trim();
-            if(str.length() == 0) {
+        for (String str = br.readLine(); str != null; str = br.readLine()) {
+            if(str.trim().length() == 0) {
                 this.l = arr.size();
                 System.out.println("the number of labelled nodes are: " + this.l);
             } else {
@@ -212,7 +209,7 @@ public class SemiGraphRegu {
         double[] value = new double[arr.size()];
 
         for(int i = 0; i < arr.size(); ++i) {
-            value[i] = ((Double)arr.get(i)).doubleValue();
+            value[i] = arr.get(i);
         }
 
         RealMatrix m = new Array2DRowRealMatrix(value);
@@ -220,9 +217,9 @@ public class SemiGraphRegu {
         return m;
     }
 
-    public int[] diagonal_nonzeros(RealMatrix m) {
+    private int[] diagonal_nonzeros(RealMatrix m) {
         int len = m.getRowDimension();
-        ArrayList<Integer> arr = new ArrayList();
+        ArrayList<Integer> arr = new ArrayList<Integer>();
 
         for(int i = 0; i < len; ++i) {
             double sum = 0.0D;
@@ -236,7 +233,7 @@ public class SemiGraphRegu {
             }
 
             if(sum > 0.0D) {
-                arr.add(new Integer(i));
+                arr.add(i);
             }
         }
 
@@ -244,13 +241,13 @@ public class SemiGraphRegu {
         System.out.println("len: " + len + " arr: " + arr.size());
 
         for(int i = 0; i < arr.size(); ++i) {
-            nonzeros[i] = ((Integer)arr.get(i)).intValue();
+            nonzeros[i] = arr.get(i);
         }
 
         return nonzeros;
     }
 
-    public RealMatrix diagonal_matrix(RealMatrix m) {
+    private RealMatrix diagonal_matrix(RealMatrix m) {
         int len = m.getRowDimension();
         RealMatrix diag = new Array2DRowRealMatrix(len, len);
 
@@ -268,7 +265,7 @@ public class SemiGraphRegu {
         return diag;
     }
 
-    public RealMatrix identity_matrix(int len) {
+    private RealMatrix identity_matrix(int len) {
         RealMatrix m = new Array2DRowRealMatrix(len, len);
 
         for(int i = 0; i < len; ++i) {
@@ -282,7 +279,7 @@ public class SemiGraphRegu {
         return m;
     }
 
-    public void set_zeros(RealMatrix m) {
+    private void set_zeros(RealMatrix m) {
         int len = m.getRowDimension();
 
         for(int i = 0; i < len; ++i) {
@@ -293,7 +290,7 @@ public class SemiGraphRegu {
 
     }
 
-    public void row_normalize_matrix(RealMatrix m) {
+    private void row_normalize_matrix(RealMatrix m) {
         int rd = m.getRowDimension();
         int cd = m.getColumnDimension();
 
@@ -315,7 +312,7 @@ public class SemiGraphRegu {
 
     }
 
-    public void normalize_matrix(RealMatrix m) {
+    private void normalize_matrix(RealMatrix m) {
         int rd = m.getRowDimension();
         int cd = m.getColumnDimension();
 

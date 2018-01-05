@@ -6,12 +6,14 @@ import java.io.*;
 import java.util.StringTokenizer;
 
 /**
+ * SVM分类预测
+ *
  * Created by helencoder on 2018/1/4.
  */
 public class svm_predict {
     private static double atof(String s)
     {
-        return Double.valueOf(s).doubleValue();
+        return Double.valueOf(s);
     }
 
     private static int atoi(String s)

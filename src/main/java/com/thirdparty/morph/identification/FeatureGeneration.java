@@ -114,8 +114,10 @@ public class FeatureGeneration {
 
         // 名称实体加载
         this.read_ners(ner_path);
+
         // 由文本中提取指定词性词加载
         this.construct_tweet_ner_set(context_path);
+
         // 加载拼音字典
         this.pinyin = new Pinyin();
         this.pinyin_dict = new HashMap<>();
@@ -123,11 +125,11 @@ public class FeatureGeneration {
     }
 
     private void generate_features(String output_path, String output_path2) throws Exception {
-        this.generate_features(this.mention_test, this.mset_test, this.mention_freq_test, output_path, output_path2);
+        this.generate_features(this.mention_test, output_path, output_path2);
     }
 
+    // 特征提取(稀疏矩阵格式存储)
     private void generate_features(HashMap<String, HashMap<String, Integer>> mentions,
-                                   MentionSet mset, HashMap<String, Integer> map_freq,
                                    String output_path, String output_path2) throws Exception {
         int mlen = this.men2tid.size();
         int plen = this.pos2tid.size();
@@ -145,13 +147,15 @@ public class FeatureGeneration {
         BufferedWriter bw2 = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(new File(output_path2)), "UTF-8"));
 
+        // 根据不同的特征构建二分类数据
         for (String key : mentions.keySet()) {
+            // 根据原始语料,若为变形词,label为1,否则为0
             String label = "0";
             if (this.anns.containsKey(key)) {
                 label = "1";
             }
-
             bw.write(label);
+
             String fword = this.word(key);
             if (fword != null) {
                 bw.write(" " + fword);
@@ -167,6 +171,8 @@ public class FeatureGeneration {
             if (fpos != null) {
                 bw.write(" " + fpos);
             }
+
+            System.out.println(label + "\t" + fword + "\t" + flexical + "\t" + fpos);
 
             int fd0 = mlen + plen + lex_len;
             bw.write(" " + this.wlen(key, fd0));
@@ -189,7 +195,7 @@ public class FeatureGeneration {
     }
 
     private String word(String m) {
-        Integer n = (Integer) this.men2tid.get(m);
+        Integer n = this.men2tid.get(m);
         return n != null ? n + ":" + 1 : null;
     }
 
@@ -377,9 +383,8 @@ public class FeatureGeneration {
     private void read_coccur(String inputpath, HashMap<String, HashMap<String, Integer>> hmap) throws Exception {
         BufferedReader br = new BufferedReader(
                 new InputStreamReader(new FileInputStream(new File(inputpath)), "UTF-8"));
-        String str = null;
 
-        while ((str = br.readLine()) != null) {
+        for (String str = br.readLine(); str != null ; str = br.readLine()) {
             str = str.trim();
             String[] items = str.split("\t");
             String mention = items[0].trim();
