@@ -1,5 +1,6 @@
 package com.helencoder.shield.word;
 
+import com.helencoder.shield.util.FileIO;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -30,28 +31,37 @@ public class NearWord {
         // 控制HttpClient控制台输出
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
 
-        // 形近字结果搜集
+    }
 
-        // 获取文本
-        String word = "繁";
+    /**
+     * 形近词归集
+     */
+    public static void nearWordCollect(String word, String filepath) {
         // 获取对应的url
         String requestUrl = String.format("http://www.fantizi5.com/xingjinzi/json/%s.html", urlCode(word));
         // 获取对应的形近词结果
         String response = get(requestUrl);
+        if (response.length() == 0) {
+            return;
+        }
         // 数据解析
         List<String> simList = new ArrayList<>();
-        String[] imgArr = response.split("&");
+        String[] imgArr = response.split("\\$");
         for (String str : imgArr) {
             String imgUrl = String.format("http://www.fantizi5.com/xingjinzi/xsz/%s/%s.png", str.substring(0, 2), str);
+            System.out.println(imgUrl);
             String imgPath = String.format("data/img/%s.png", str);
-            // 图片转存
-            downloadImage(imgUrl, imgPath);
+            File file = new File(imgPath);
+            if (!file.exists()) {
+                // 图片转存
+                downloadImage(imgUrl, imgPath);
+            }
             // 图片解析
             simList.add(imgOcr(imgPath));
         }
-        // 数据转存
 
-
+        String recordStr = simList.toString();
+        FileIO.appendFile(filepath, word + "\t" + recordStr.substring(1, recordStr.length() - 1));
     }
 
     /**
@@ -85,6 +95,9 @@ public class NearWord {
             HttpGet httpget = new HttpGet(url);
             // 执行get请求.
             CloseableHttpResponse httpResponse = httpclient.execute(httpget);
+            if (httpResponse.getStatusLine().getStatusCode() != 200) {
+                return "";
+            }
             try {
                 // 获取响应实体
                 HttpEntity entity = httpResponse.getEntity();
@@ -185,11 +198,11 @@ public class NearWord {
         instance.setLanguage("chi_sim");//中文识别
         String result = "";
         try {
-            result = instance.doOCR(imageFile);
+            result = instance.doOCR(imageFile).replaceAll("\n", "").trim();
         } catch (TesseractException ex) {
             ex.printStackTrace();
         }
-        return result;
+        return result.trim();
     }
 
 }
