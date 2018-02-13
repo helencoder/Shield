@@ -25,3 +25,7 @@ hs_err_pid*
 target/
 .idea/
 Shield.iml
+src/test/
+data/
+libs/
+*.txt
